@@ -20,4 +20,5 @@ def count_hsps(file_d):
     return alignments, hsps
 
 BLAST_FILE = open("blastp.txt", "r")
+
 print count_hsps(BLAST_FILE)

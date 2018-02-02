@@ -1,6 +1,7 @@
 """
 To build a blastp parser
 """
+
 class BlastResult(object):
     """
     Object for blast result
