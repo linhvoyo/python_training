@@ -5,11 +5,15 @@ class BlastResult(object):
     """
     Object for blast result
     """
-    def __init__(self, version, database_sequences, database_letters, descriptions):
+    def __init__(self, version, database_sequences, database_letters, descriptions, \
+                matrix, gap_penalties, num_hits):
         self.version = version
         self.database_sequences = database_sequences
         self.database_letters = database_letters
         self.descriptions = descriptions
+        self.matrix = matrix
+        self.gap_penalties = gap_penalties
+        self.num_hits = num_hits
 
 class BlastDescription(object):
     """
@@ -82,6 +86,23 @@ def descriptions_lines(file_d):
             descriptions.append(description)
     return descriptions
 
+def blast_sum(file_d):
+    """
+    Assignment 2:
+    Part 1:
+    Modify BlastResult to also include "Matrix", "Gap Penalties" and "Number of Hits to DB"
+    """
+    while 1:
+        line = file_d.readline()
+        if not line:
+            raise TypeError("Found end of file when reading summaries")
+        if line.startswith("Matrix: "):
+            matrix = line.rstrip().split()[1]
+            gap_penalties = [int(x) for x in file_d.readline().replace(",", "").split()[3:6:2]]
+            num_hits = int(file_d.readline().split()[5])
+            break
+    return(matrix, gap_penalties, num_hits)
+
 def parse_blastp(file_d):
     """
     Parse blastp output
@@ -89,4 +110,14 @@ def parse_blastp(file_d):
     version = blast_version(file_d)
     num_seq, num_letters = counts_line(file_d)
     descriptions = descriptions_lines(file_d)
-    return BlastResult(version, num_seq, num_letters, descriptions)
+    matrix, gap_penalties, num_hits = blast_sum(file_d)
+    return BlastResult(version, num_seq, num_letters, descriptions, matrix, gap_penalties, num_hits)
+
+BLAST_FILE = open("blastp.txt", "r")
+result = parse_blastp(BLAST_FILE)
+print len(result.descriptions)
+# print result.version
+# print result.database_sequences
+# print result.matrix
+# print result.gap_penalties
+# print result.num_hits
