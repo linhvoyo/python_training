@@ -114,10 +114,4 @@ def parse_blastp(file_d):
     return BlastResult(version, num_seq, num_letters, descriptions, matrix, gap_penalties, num_hits)
 
 BLAST_FILE = open("blastp.txt", "r")
-result = parse_blastp(BLAST_FILE)
-print len(result.descriptions)
-# print result.version
-# print result.database_sequences
-# print result.matrix
-# print result.gap_penalties
-# print result.num_hits
+RESULT = parse_blastp(BLAST_FILE)
