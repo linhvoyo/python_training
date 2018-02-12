@@ -10,10 +10,9 @@ def get_hydro_values(seq):
     """
     Get hydrophobicity values for each amino acid in sequence
     """
-    kd = { 'A': 1.8,'R':-4.5,'N':-3.5,'D':-3.5,'C': 2.5,
-           'Q':-3.5,'E':-3.5,'G':-0.4,'H':-3.2,'I': 4.5,
-           'L': 3.8,'K':-3.9,'M': 1.9,'F': 2.8,'P':-1.6,
-           'S':-0.8,'T':-0.7,'W':-0.9,'Y':-1.3,'V': 4.2 }
+    kd = {'A': 1.8, 'R':-4.5, 'N':-3.5, 'D':-3.5, 'C': 2.5, 'Q':-3.5, 'E':-3.5,\
+        'G':-0.4, 'H':-3.2, 'I': 4.5, 'L': 3.8, 'K':-3.9, 'M': 1.9, 'F': 2.8,\
+        'P':-1.6, 'S':-0.8, 'T':-0.7, 'W':-0.9, 'Y':-1.3, 'V': 4.2}
     values = []
     for residue in seq:
         values.append(kd[residue])
@@ -24,7 +23,7 @@ def label_axis(size, method):
     Label plot
     """
     plt.xlabel("residue number")
-    plt.ylabel("hydrophocity ( " + method + " over " + str(size) + " values" )
+    plt.ylabel("hydrophocity ( " + method + " over " + str(size) + " values")
     plt.title("K+D hydrophocity for " + INPUT_SEQ.title.split()[0])
 
 def moving_avg(seq, size):
@@ -75,11 +74,11 @@ INPUT_SEQ = fasta_reader.read_fasta_record(INPUT_FILE)
 HYDRO_VALUES = get_hydro_values(INPUT_SEQ.sequence)
 WINDOW_SIZE = 19
 X_AXIS, TRIANGLE = triangle_filter(HYDRO_VALUES, WINDOW_SIZE)
-plt.plot(X_AXIS, TRIANGLE, linewidth = 1.0)
+plt.plot(X_AXIS, TRIANGLE, linewidth=1.0)
 X_AXIS, MVA = moving_avg(HYDRO_VALUES, WINDOW_SIZE)
-plt.plot(X_AXIS, MVA, linewidth = 1.0)
-plt.axis(xmin = 1, xmax = len(HYDRO_VALUES))
-plt.axhline(y = 1.6)
+plt.plot(X_AXIS, MVA, linewidth=1.0)
+plt.axis(xmin=1, xmax=len(HYDRO_VALUES))
+plt.axhline(y=1.6)
 label_axis(WINDOW_SIZE, "triangle average")
 color_regions()
-plt.savefig("ex.png", dpi = 80)
+plt.savefig("ex.png", dpi=80)
