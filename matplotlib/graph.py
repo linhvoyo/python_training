@@ -2,9 +2,9 @@
 Compute hydrophobicity values for a sequence
 """
 
-import fasta_reader
 from pylab import plt
 import numpy as np
+import fasta_reader
 
 def get_hydro_values(seq):
     """
@@ -19,35 +19,32 @@ def get_hydro_values(seq):
         values.append(kd[residue])
     return values
 
-def label_axis(title,n):
+def label_axis(size, method):
     """
     Label plot
     """
     plt.xlabel("residue number")
-    plt.ylabel("hydrophocity (moving avg over " + str(n) + " residues" )    
-    plt.title("K+D hydrophocity for " + record.title.split()[0])
+    plt.ylabel("hydrophocity ( " + method + " over " + str(size) + " values" )
+    plt.title("K+D hydrophocity for " + INPUT_SEQ.title.split()[0])
 
-
-def mva(seq, n):
+def moving_avg(seq, size):
     """
     Data Smothing
     Finding moving average for specify window size.
     N has to be an odd number
     """
-    mva = []
+    averages = []
     seq = seq
-    if n % 2 != 0:
-        for residue in range(n/2, len(seq) - (n/2)):
-            mva.append(sum(seq[residue - (n/2): residue + (n/2) + 1])/n)
-
-    x_data = range((n/2), (len(mva) + n/2))
-    return (x_data, mva)
+    if size % 2 != 0:
+        for residue in range(size/2, len(seq) - (size/2)):
+            averages.append(sum(seq[residue - (size/2): residue + (size/2) + 1])/size)
+    x_data = range((size/2), (len(averages) + size/2))
+    return (x_data, averages)
 
 def color_regions():
     """
     Draw the known helix and ribbon ranges.
-    Yellow = helix 
-    Red = sheet
+    Yellow = helix and Red = sheet
     """
     plt.axvspan(9, 32, facecolor="yellow", alpha=0.4) # helix
     plt.axvspan(36, 61, facecolor="yellow", alpha=0.4)
@@ -59,35 +56,30 @@ def color_regions():
     plt.axvspan(164, 190, facecolor="yellow", alpha=0.4)
     plt.axvspan(200, 224, facecolor="yellow", alpha=0.4)
 
-def plot_graph(x_data, y_data, transmembrane_threshold):
-    plt.plot(x_data, y_data, linewidth = 1.0)
-    plt.axis(xmin = 1, xmax = len(hydro_values))
-    plt.axhline(y = transmembrane_threshold)
-    print transmembrane_threshold
-
-def triangle_filter(seq, n):
-    weights = range(1, n/2 + 2) + sorted(range(1, n/2 + 1), reverse=True)
+def triangle_filter(seq, size):
+    """
+    Data Smoothing
+    Applying triangle filter function
+    """
+    weights = range(1, size/2 + 2) + sorted(range(1, size/2 + 1), reverse=True)
+    sw = sum(weights)
     smooth_values = []
-    for residue in range(n/2, len(seq) - (n/2)):
-        new = seq[residue - (n/2): residue + (n/2) + 1]
-        smooth_values.append(sum(np.multiply(new, weights)))
-    x_data = range((n/2), len(smooth_values) + (n/2))
+    for residue in range(size/2, len(seq) - (size/2)):
+        new = seq[residue - (size/2): residue + (size/2) + 1]
+        smooth_values.append(sum(np.multiply(new, weights)/sw))
+    x_data = range((size/2), len(smooth_values) + (size/2))
     return (x_data, smooth_values)
 
-
-
 INPUT_FILE = open("bacteriorhodopsin.fasta")
-record = fasta_reader.read_fasta_record(INPUT_FILE)
-hydro_values = get_hydro_values(record.sequence)
-
-
-window_size = 19
-#x_axis, mva = mva(hydro_values, window_size)
-x_axis, y_axis = triangle_filter(hydro_values, window_size)
-plot_graph(x_axis, y_axis, 1.6)
-label_axis(record.title.split()[0], window_size)
+INPUT_SEQ = fasta_reader.read_fasta_record(INPUT_FILE)
+HYDRO_VALUES = get_hydro_values(INPUT_SEQ.sequence)
+WINDOW_SIZE = 19
+X_AXIS, TRIANGLE = triangle_filter(HYDRO_VALUES, WINDOW_SIZE)
+plt.plot(X_AXIS, TRIANGLE, linewidth = 1.0)
+X_AXIS, MVA = moving_avg(HYDRO_VALUES, WINDOW_SIZE)
+plt.plot(X_AXIS, MVA, linewidth = 1.0)
+plt.axis(xmin = 1, xmax = len(HYDRO_VALUES))
+plt.axhline(y = 1.6)
+label_axis(WINDOW_SIZE, "triangle average")
 color_regions()
 plt.savefig("ex.png", dpi = 80)
-
-
-
