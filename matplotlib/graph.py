@@ -4,6 +4,7 @@ Compute hydrophobicity values for a sequence
 
 import fasta_reader
 from pylab import plt
+import numpy as np
 
 def get_hydro_values(seq):
     """
@@ -59,19 +60,34 @@ def color_regions():
     plt.axvspan(200, 224, facecolor="yellow", alpha=0.4)
 
 def plot_graph(x_data, y_data, transmembrane_threshold):
-    plt.plot(x_data, mva, linewidth = 1.0)
+    plt.plot(x_data, y_data, linewidth = 1.0)
     plt.axis(xmin = 1, xmax = len(hydro_values))
     plt.axhline(y = transmembrane_threshold)
-    
+    print transmembrane_threshold
+
+def triangle_filter(seq, n):
+    weights = range(1, n/2 + 2) + sorted(range(1, n/2 + 1), reverse=True)
+    smooth_values = []
+    for residue in range(n/2, len(seq) - (n/2)):
+        new = seq[residue - (n/2): residue + (n/2) + 1]
+        smooth_values.append(sum(np.multiply(new, weights)))
+    x_data = range((n/2), len(smooth_values) + (n/2))
+    return (x_data, smooth_values)
+
+
+
 INPUT_FILE = open("bacteriorhodopsin.fasta")
 record = fasta_reader.read_fasta_record(INPUT_FILE)
 hydro_values = get_hydro_values(record.sequence)
 
 
 window_size = 19
-x_axis, mva = mva(hydro_values, window_size)
-plot_graph(x_axis, mva, 1.6)
-
+#x_axis, mva = mva(hydro_values, window_size)
+x_axis, y_axis = triangle_filter(hydro_values, window_size)
+plot_graph(x_axis, y_axis, 1.6)
 label_axis(record.title.split()[0], window_size)
 color_regions()
 plt.savefig("ex.png", dpi = 80)
+
+
+
